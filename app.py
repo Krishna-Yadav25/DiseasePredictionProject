@@ -1,9 +1,20 @@
 import streamlit as st
 import pickle
 import pandas as pd
+import numpy as np
 
 # ==========================
-# Load Model and Data
+# Page Configuration
+# ==========================
+
+st.set_page_config(
+    page_title="AI Disease Prediction System",
+    page_icon="🩺",
+    layout="centered"
+)
+
+# ==========================
+# Load Files
 # ==========================
 
 model = pickle.load(open("model.pkl", "rb"))
@@ -13,22 +24,39 @@ description_df = pd.read_csv("symptom_Description.csv")
 precaution_df = pd.read_csv("symptom_precaution.csv")
 
 # ==========================
-# Page Title
+# Sidebar
 # ==========================
 
-st.set_page_config(
-    page_title="Disease Prediction System",
-    page_icon="🩺",
-    layout="centered"
-)
+st.sidebar.title("ℹ About Project")
+
+st.sidebar.info("""
+AI Disease Prediction System
+
+Built Using:
+
+• Python
+• Pandas
+• NumPy
+• Scikit-Learn
+• Random Forest
+• Streamlit
+
+Developer:
+Krishna Yadav
+""")
+
+# ==========================
+# Main Title
+# ==========================
 
 st.title("🩺 AI Disease Prediction System")
+
 st.write(
     "Select symptoms and predict the most likely disease using Machine Learning."
 )
 
 # ==========================
-# Symptoms Dropdown
+# Symptom Selection
 # ==========================
 
 all_symptoms = sorted(list(symptom_index.keys()))
@@ -42,34 +70,97 @@ selected_symptoms = st.multiselect(
 # Prediction Button
 # ==========================
 
-if st.button("Predict Disease"):
+if st.button("🔍 Predict Disease"):
 
     if len(selected_symptoms) == 0:
-        st.warning("Please select at least one symptom.")
+
+        st.warning(
+            "Please select at least one symptom."
+        )
+
     else:
+
+        # Create Input Vector
 
         input_vector = [0] * len(symptom_index)
 
         for symptom in selected_symptoms:
-            input_vector[symptom_index[symptom]] = 1
+            if symptom in symptom_index:
+                input_vector[
+                    symptom_index[symptom]
+                ] = 1
 
-        prediction = model.predict([input_vector])
+        # Prediction
+
+        prediction = model.predict(
+            [input_vector]
+        )
 
         disease = prediction[0]
 
         # ==========================
-        # Disease Result
+        # Confidence Score
+        # ==========================
+
+        confidence = None
+
+        try:
+            probabilities = model.predict_proba(
+                [input_vector]
+            )
+
+            confidence = (
+                np.max(probabilities[0]) * 100
+            )
+
+        except:
+            pass
+
+        # ==========================
+        # Predicted Disease
         # ==========================
 
         st.success(
             f"Predicted Disease: {disease}"
         )
 
+        if confidence is not None:
+
+            st.info(
+                f"Confidence Score: {confidence:.2f}%"
+            )
+
+        # ==========================
+        # Top 3 Predictions
+        # ==========================
+
+        try:
+
+            st.subheader(
+                "🏆 Top 3 Possible Diseases"
+            )
+
+            top3_idx = np.argsort(
+                probabilities[0]
+            )[-3:][::-1]
+
+            for idx in top3_idx:
+
+                st.write(
+                    f"• {model.classes_[idx]} "
+                    f"({probabilities[0][idx]*100:.2f}%)"
+                )
+
+        except:
+            pass
+
         # ==========================
         # Disease Description
         # ==========================
 
-        st.subheader("📖 Disease Description")
+        st.subheader(
+            "📖 Disease Description"
+        )
 
         description_row = description_df[
             description_df["Disease"] == disease
@@ -77,20 +168,29 @@ if st.button("Predict Disease"):
 
         if not description_row.empty:
 
-            description_column = description_row.columns[1]
+            description_column = (
+                description_row.columns[1]
+            )
 
             st.info(
-                description_row.iloc[0][description_column]
+                description_row.iloc[0][
+                    description_column
+                ]
             )
 
         else:
-            st.write("Description not available.")
+
+            st.write(
+                "Description not available."
+            )
 
         # ==========================
         # Precautions
         # ==========================
 
-        st.subheader("🛡️ Recommended Precautions")
+        st.subheader(
+            "🛡 Recommended Precautions"
+        )
 
         precaution_row = precaution_df[
             precaution_df["Disease"] == disease
@@ -103,7 +203,23 @@ if st.button("Predict Disease"):
                 value = precaution_row.iloc[0][col]
 
                 if pd.notna(value):
-                    st.write(f"✅ {value}")
+
+                    st.write(
+                        f"✅ {value}"
+                    )
 
         else:
-            st.write("Precautions not available.")
+
+            st.write(
+                "Precautions not available."
+            )
+
+# ==========================
+# Footer
+# ==========================
+
+st.markdown("---")
+
+st.caption(
+    "⚠ This prediction is generated by a Machine Learning model and should not be considered medical advice."
+)
