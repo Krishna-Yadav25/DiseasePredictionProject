@@ -53,7 +53,7 @@
 #     return response.text
 
 from dotenv import load_dotenv
-from google import genai
+import google.generativeai as genai
 import os
 
 load_dotenv()
