@@ -1,4 +1,7 @@
 streamlit
+scikit-learn
 pandas
 numpy
-scikit-learn
+pickle5
+python-dotenv
+google-generativeai
