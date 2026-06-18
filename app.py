@@ -1,4 +1,6 @@
 
+
+
 # import streamlit as st
 # import pickle
 # import pandas as pd
@@ -7,17 +9,19 @@
 # import json
 # import io
 # import time
-# import streamlit as st
 
-# # Page config 
+# # ════════════════════════════════════════════════════════════════
+# # PAGE CONFIG  (only once — at the very top)
+# # ════════════════════════════════════════════════════════════════
+
 # st.set_page_config(
-#     page_title="MediAI - Disease Prediction",
-#     page_icon="🏥",
+#     page_title="MediAI — Disease Prediction",
+#     page_icon="🩺",
 #     layout="wide",
-#     initial_sidebar_state="expanded"
+#     initial_sidebar_state="expanded",
 # )
 
-# # ── PDF generation 
+# # ── PDF generation
 # try:
 #     from fpdf import FPDF
 #     PDF_AVAILABLE = True
@@ -32,40 +36,23 @@
 # )
 
 # # ════════════════════════════════════════════════════════════════
-# # PAGE CONFIG
-# # ════════════════════════════════════════════════════════════════
-
-# st.set_page_config(
-#     page_title="MediAI — Disease Prediction",
-#     page_icon="🩺",
-#     layout="wide",
-#     initial_sidebar_state="expanded",
-# )
-
-# # ════════════════════════════════════════════════════════════════
 # # HELPERS
 # # ════════════════════════════════════════════════════════════════
 
 # def safe_latin1(text: str) -> str:
-#     """Strip any character that Helvetica / Latin-1 can't handle."""
 #     return text.encode("latin-1", errors="replace").decode("latin-1")
 
 
 # def call_gemini_with_retry(fn, *args, max_retries=3, **kwargs):
-#     """
-#     Call any gemini_helper function with exponential back-off.
-#     Handles 503 / ResourceExhausted / overload gracefully.
-#     """
 #     for attempt in range(max_retries):
 #         try:
 #             return fn(*args, **kwargs)
 #         except Exception as e:
 #             err = str(e).lower()
-#             # Retryable: overloaded / quota / 503 / rate-limit
 #             if any(k in err for k in ["503", "overload", "resource_exhausted",
 #                                        "quota", "rate", "unavailable", "high demand"]):
 #                 if attempt < max_retries - 1:
-#                     wait = 2 ** attempt          # 1 s, 2 s, 4 s
+#                     wait = 2 ** attempt
 #                     st.toast(f"AI busy – retrying in {wait}s… ({attempt+1}/{max_retries})")
 #                     time.sleep(wait)
 #                 else:
@@ -73,217 +60,7 @@
 #                         "Gemini AI is currently overloaded. Please wait a moment and try again."
 #                     )
 #             else:
-#                 raise   # non-retryable error – surface immediately
-
-
-# # ════════════════════════════════════════════════════════════════
-# # CUSTOM CSS  
-# # ════════════════════════════════════════════════════════════════
-
-# st.markdown("""
-# <style>
-# @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=Syne:wght@700;800&display=swap');
-
-# :root {
-#     --bg:        #0d1117;
-#     --surface:   #161b22;
-#     --card:      #1c2333;
-#     --border:    #30363d;
-#     --accent:    #1f8aff;
-#     --accent2:   #0acf97;
-#     --warn:      #f59e0b;
-#     --danger:    #ef4444;
-#     --text:      #e6edf3;
-#     --muted:     #8b949e;
-#     --radius:    12px;
-# }
-
-# html, body, [class*="css"] {
-#     font-family: 'Inter', sans-serif;
-#     background-color: var(--bg) !important;
-#     color: var(--text) !important;
-# }
-
-# #MainMenu, footer, header { visibility: hidden; }
-# .block-container { padding: 2rem 2rem 4rem; max-width: 1100px; }
-
-# [data-testid="stSidebar"] {
-#     background: var(--surface) !important;
-#     border-right: 1px solid var(--border);
-# }
-# [data-testid="stSidebar"] * { color: var(--text) !important; }
-
-# .medi-card {
-#     background: var(--card);
-#     border: 1px solid var(--border);
-#     border-radius: var(--radius);
-#     padding: 1.5rem;
-#     margin-bottom: 1.2rem;
-#     transition: box-shadow .2s;
-# }
-# .medi-card:hover { box-shadow: 0 0 0 1px var(--accent); }
-
-# .hero {
-#     background: linear-gradient(135deg, #0f2027 0%, #203a43 50%, #1a2a3a 100%);
-#     border: 1px solid var(--border);
-#     border-radius: var(--radius);
-#     padding: 2.5rem 2rem;
-#     margin-bottom: 2rem;
-#     text-align: center;
-# }
-# .hero h1 {
-#     font-family: 'Syne', sans-serif;
-#     font-size: 2.6rem;
-#     font-weight: 800;
-#     background: linear-gradient(90deg, #1f8aff, #0acf97);
-#     -webkit-background-clip: text;
-#     -webkit-text-fill-color: transparent;
-#     margin: 0 0 .5rem;
-# }
-# .hero p { color: var(--muted); font-size: 1.05rem; margin: 0; }
-
-# .badge {
-#     display: inline-block;
-#     padding: .3rem .9rem;
-#     border-radius: 999px;
-#     font-size: .8rem;
-#     font-weight: 600;
-#     letter-spacing: .04em;
-#     text-transform: uppercase;
-# }
-# .badge-low    { background: #0d3321; color: var(--accent2); border: 1px solid #0acf9740; }
-# .badge-medium { background: #2d2006; color: var(--warn);   border: 1px solid #f59e0b40; }
-# .badge-high   { background: #2d0a0a; color: var(--danger); border: 1px solid #ef444440; }
-
-# .conf-ring { text-align: center; padding: .5rem; }
-# .conf-ring .number {
-#     font-family: 'Syne', sans-serif;
-#     font-size: 2.8rem;
-#     font-weight: 800;
-#     color: var(--accent2);
-#     line-height: 1;
-# }
-# .conf-ring .label {
-#     font-size: .75rem;
-#     color: var(--muted);
-#     text-transform: uppercase;
-#     letter-spacing: .1em;
-# }
-
-# .disease-name {
-#     font-family: 'Syne', sans-serif;
-#     font-size: 1.9rem;
-#     font-weight: 700;
-#     color: var(--text);
-#     margin: .4rem 0;
-# }
-
-# .prob-bar-wrap { margin: .5rem 0; }
-# .prob-bar-label { font-size: .85rem; color: var(--muted); margin-bottom: .2rem; }
-# .prob-bar-track { height: 8px; background: var(--border); border-radius: 4px; overflow: hidden; }
-# .prob-bar-fill {
-#     height: 100%;
-#     border-radius: 4px;
-#     background: linear-gradient(90deg, var(--accent), var(--accent2));
-#     transition: width .8s cubic-bezier(.4,0,.2,1);
-# }
-
-# .chat-user {
-#     background: #1a2744;
-#     border: 1px solid #1f3a6e;
-#     border-radius: var(--radius) var(--radius) 4px var(--radius);
-#     padding: .8rem 1.1rem;
-#     margin: .5rem 0 .5rem 3rem;
-#     font-size: .9rem;
-# }
-# .chat-ai {
-#     background: var(--card);
-#     border: 1px solid var(--border);
-#     border-radius: var(--radius) var(--radius) var(--radius) 4px;
-#     padding: .8rem 1.1rem;
-#     margin: .5rem 3rem .5rem 0;
-#     font-size: .9rem;
-#     line-height: 1.6;
-# }
-
-# .stButton > button {
-#     background: linear-gradient(135deg, var(--accent), #0d6bcc) !important;
-#     color: white !important;
-#     border: none !important;
-#     border-radius: 8px !important;
-#     font-weight: 600 !important;
-#     padding: .55rem 1.4rem !important;
-#     transition: opacity .2s !important;
-# }
-# .stButton > button:hover { opacity: .85 !important; }
-
-# [data-baseweb="tag"] {
-#     background: #1a2744 !important;
-#     border: 1px solid var(--accent) !important;
-#     color: var(--text) !important;
-# }
-
-# input, textarea, [data-baseweb="input"] {
-#     background: var(--surface) !important;
-#     border-color: var(--border) !important;
-#     color: var(--text) !important;
-#     border-radius: 8px !important;
-# }
-
-# .section-title {
-#     font-family: 'Syne', sans-serif;
-#     font-size: 1.1rem;
-#     font-weight: 700;
-#     color: var(--muted);
-#     text-transform: uppercase;
-#     letter-spacing: .12em;
-#     border-bottom: 1px solid var(--border);
-#     padding-bottom: .5rem;
-#     margin: 1.5rem 0 1rem;
-# }
-
-# .medi-footer {
-#     text-align: center;
-#     color: var(--muted);
-#     font-size: .78rem;
-#     padding: 2rem 0 .5rem;
-#     border-top: 1px solid var(--border);
-#     margin-top: 3rem;
-# }
-# </style>
-# """, unsafe_allow_html=True)
-
-
-# # ════════════════════════════════════════════════════════════════
-# # LOAD ARTIFACTS
-# # ════════════════════════════════════════════════════════════════
-
-# @st.cache_resource(show_spinner=False)
-# def load_artifacts():
-#     errors = []
-#     try:
-#         model = pickle.load(open("model.pkl", "rb"))
-#     except FileNotFoundError:
-#         model = None
-#         errors.append("model.pkl not found.")
-#     try:
-#         symptom_index = pickle.load(open("symptom_index.pkl", "rb"))
-#     except FileNotFoundError:
-#         symptom_index = {}
-#         errors.append("symptom_index.pkl not found.")
-#     try:
-#         desc_df = pd.read_csv("symptom_Description.csv")
-#     except FileNotFoundError:
-#         desc_df = pd.DataFrame()
-#         errors.append("symptom_Description.csv not found.")
-#     try:
-#         prec_df = pd.read_csv("symptom_precaution.csv")
-#     except FileNotFoundError:
-#         prec_df = pd.DataFrame()
-#         errors.append("symptom_precaution.csv not found.")
-#     return model, symptom_index, desc_df, prec_df, errors
-
-# model, symptom_index, description_df, precaution_df, load_errors = load_artifacts()
+#                 raise
 
 
 # # ════════════════════════════════════════════════════════════════
@@ -300,6 +77,7 @@
 #     "risk_level": None,
 #     "ai_explanation": None,
 #     "history_log": [],
+#     "theme": "🌙 Dark Mode",
 # }.items():
 #     if key not in st.session_state:
 #         st.session_state[key] = default
@@ -312,6 +90,18 @@
 # with st.sidebar:
 #     st.markdown("## 🩺 MediAI")
 #     st.caption("AI-Powered Disease Prediction")
+#     st.divider()
+
+#     # ── THEME TOGGLE ──────────────────────────────────────────
+#     st.markdown("### 🎨 Theme")
+#     theme = st.radio(
+#         "Select theme",
+#         ["🌙 Dark Mode", "☀️ Light Mode"],
+#         index=0 if st.session_state.theme == "🌙 Dark Mode" else 1,
+#         horizontal=True,
+#         label_visibility="collapsed",
+#     )
+#     st.session_state.theme = theme
 #     st.divider()
 
 #     st.markdown("### 📋 Session Summary")
@@ -362,7 +152,249 @@
 #     st.caption("For educational use only. Not a substitute for medical advice.")
 #     st.caption("Built by **Krishna Yadav**")
 
-#     if load_errors:
+
+# # ════════════════════════════════════════════════════════════════
+# # DYNAMIC CSS  (switches based on theme)
+# # ════════════════════════════════════════════════════════════════
+
+# is_dark = st.session_state.theme == "🌙 Dark Mode"
+
+# if is_dark:
+#     bg        = "#0d1117"
+#     surface   = "#161b22"
+#     card      = "#1c2333"
+#     border    = "#30363d"
+#     text      = "#e6edf3"
+#     muted     = "#8b949e"
+#     hero_grad = "linear-gradient(135deg, #0f2027 0%, #203a43 50%, #1a2a3a 100%)"
+#     chat_user_bg     = "#1a2744"
+#     chat_user_border = "#1f3a6e"
+#     tag_bg           = "#1a2744"
+#     tag_border       = "#1f3a6e"
+#     input_bg         = "#161b22"
+# else:
+#     bg        = "#f0f4f8"
+#     surface   = "#ffffff"
+#     card      = "#ffffff"
+#     border    = "#d1d9e0"
+#     text      = "#1c2333"
+#     muted     = "#57606a"
+#     hero_grad = "linear-gradient(135deg, #dbeafe 0%, #ede9fe 50%, #d1fae5 100%)"
+#     chat_user_bg     = "#dbeafe"
+#     chat_user_border = "#93c5fd"
+#     tag_bg           = "#ede9fe"
+#     tag_border       = "#a78bfa"
+#     input_bg         = "#ffffff"
+
+# st.markdown(f"""
+# <style>
+# @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=Syne:wght@700;800&display=swap');
+
+# :root {{
+#     --bg:        {bg};
+#     --surface:   {surface};
+#     --card:      {card};
+#     --border:    {border};
+#     --accent:    #1f8aff;
+#     --accent2:   #0acf97;
+#     --warn:      #f59e0b;
+#     --danger:    #ef4444;
+#     --text:      {text};
+#     --muted:     {muted};
+#     --radius:    12px;
+# }}
+
+# html, body, [class*="css"] {{
+#     font-family: 'Inter', sans-serif;
+#     background-color: var(--bg) !important;
+#     color: var(--text) !important;
+# }}
+
+# #MainMenu, footer, header {{ visibility: hidden; }}
+# .block-container {{ padding: 2rem 2rem 4rem; max-width: 1100px; }}
+
+# [data-testid="stSidebar"] {{
+#     background: {surface} !important;
+#     border-right: 1px solid {border};
+# }}
+# [data-testid="stSidebar"] * {{ color: {text} !important; }}
+
+# .medi-card {{
+#     background: var(--card);
+#     border: 1px solid var(--border);
+#     border-radius: var(--radius);
+#     padding: 1.5rem;
+#     margin-bottom: 1.2rem;
+#     transition: box-shadow .2s;
+# }}
+# .medi-card:hover {{ box-shadow: 0 0 0 1px var(--accent); }}
+
+# .hero {{
+#     background: {hero_grad};
+#     border: 1px solid var(--border);
+#     border-radius: var(--radius);
+#     padding: 2.5rem 2rem;
+#     margin-bottom: 2rem;
+#     text-align: center;
+# }}
+# .hero h1 {{
+#     font-family: 'Syne', sans-serif;
+#     font-size: 2.6rem;
+#     font-weight: 800;
+#     background: linear-gradient(90deg, #1f8aff, #0acf97);
+#     -webkit-background-clip: text;
+#     -webkit-text-fill-color: transparent;
+#     margin: 0 0 .5rem;
+# }}
+# .hero p {{ color: var(--muted); font-size: 1.05rem; margin: 0; }}
+
+# .badge {{
+#     display: inline-block;
+#     padding: .3rem .9rem;
+#     border-radius: 999px;
+#     font-size: .8rem;
+#     font-weight: 600;
+#     letter-spacing: .04em;
+#     text-transform: uppercase;
+# }}
+# .badge-low    {{ background: #0d3321; color: #0acf97; border: 1px solid #0acf9740; }}
+# .badge-medium {{ background: #2d2006; color: #f59e0b; border: 1px solid #f59e0b40; }}
+# .badge-high   {{ background: #2d0a0a; color: #ef4444; border: 1px solid #ef444440; }}
+
+# .conf-ring {{ text-align: center; padding: .5rem; }}
+# .conf-ring .number {{
+#     font-family: 'Syne', sans-serif;
+#     font-size: 2.8rem;
+#     font-weight: 800;
+#     color: #0acf97;
+#     line-height: 1;
+# }}
+# .conf-ring .label {{
+#     font-size: .75rem;
+#     color: var(--muted);
+#     text-transform: uppercase;
+#     letter-spacing: .1em;
+# }}
+
+# .disease-name {{
+#     font-family: 'Syne', sans-serif;
+#     font-size: 1.9rem;
+#     font-weight: 700;
+#     color: var(--text);
+#     margin: .4rem 0;
+# }}
+
+# .prob-bar-wrap {{ margin: .5rem 0; }}
+# .prob-bar-label {{ font-size: .85rem; color: var(--muted); margin-bottom: .2rem; }}
+# .prob-bar-track {{ height: 8px; background: var(--border); border-radius: 4px; overflow: hidden; }}
+# .prob-bar-fill {{
+#     height: 100%;
+#     border-radius: 4px;
+#     background: linear-gradient(90deg, #1f8aff, #0acf97);
+#     transition: width .8s cubic-bezier(.4,0,.2,1);
+# }}
+
+# .chat-user {{
+#     background: {chat_user_bg};
+#     border: 1px solid {chat_user_border};
+#     border-radius: var(--radius) var(--radius) 4px var(--radius);
+#     padding: .8rem 1.1rem;
+#     margin: .5rem 0 .5rem 3rem;
+#     font-size: .9rem;
+#     color: var(--text);
+# }}
+# .chat-ai {{
+#     background: var(--card);
+#     border: 1px solid var(--border);
+#     border-radius: var(--radius) var(--radius) var(--radius) 4px;
+#     padding: .8rem 1.1rem;
+#     margin: .5rem 3rem .5rem 0;
+#     font-size: .9rem;
+#     line-height: 1.6;
+#     color: var(--text);
+# }}
+
+# .stButton > button {{
+#     background: linear-gradient(135deg, #1f8aff, #0d6bcc) !important;
+#     color: white !important;
+#     border: none !important;
+#     border-radius: 8px !important;
+#     font-weight: 600 !important;
+#     padding: .55rem 1.4rem !important;
+#     transition: opacity .2s !important;
+# }}
+# .stButton > button:hover {{ opacity: .85 !important; }}
+
+# [data-baseweb="tag"] {{
+#     background: {tag_bg} !important;
+#     border: 1px solid {tag_border} !important;
+#     color: var(--text) !important;
+# }}
+
+# input, textarea, [data-baseweb="input"] {{
+#     background: {input_bg} !important;
+#     border-color: {border} !important;
+#     color: {text} !important;
+#     border-radius: 8px !important;
+# }}
+
+# .section-title {{
+#     font-family: 'Syne', sans-serif;
+#     font-size: 1.1rem;
+#     font-weight: 700;
+#     color: var(--muted);
+#     text-transform: uppercase;
+#     letter-spacing: .12em;
+#     border-bottom: 1px solid var(--border);
+#     padding-bottom: .5rem;
+#     margin: 1.5rem 0 1rem;
+# }}
+
+# .medi-footer {{
+#     text-align: center;
+#     color: var(--muted);
+#     font-size: .78rem;
+#     padding: 2rem 0 .5rem;
+#     border-top: 1px solid var(--border);
+#     margin-top: 3rem;
+# }}
+# </style>
+# """, unsafe_allow_html=True)
+
+
+# # ════════════════════════════════════════════════════════════════
+# # LOAD ARTIFACTS
+# # ════════════════════════════════════════════════════════════════
+
+# @st.cache_resource(show_spinner=False)
+# def load_artifacts():
+#     errors = []
+#     try:
+#         model = pickle.load(open("model.pkl", "rb"))
+#     except FileNotFoundError:
+#         model = None
+#         errors.append("model.pkl not found.")
+#     try:
+#         symptom_index = pickle.load(open("symptom_index.pkl", "rb"))
+#     except FileNotFoundError:
+#         symptom_index = {}
+#         errors.append("symptom_index.pkl not found.")
+#     try:
+#         desc_df = pd.read_csv("symptom_Description.csv")
+#     except FileNotFoundError:
+#         desc_df = pd.DataFrame()
+#         errors.append("symptom_Description.csv not found.")
+#     try:
+#         prec_df = pd.read_csv("symptom_precaution.csv")
+#     except FileNotFoundError:
+#         prec_df = pd.DataFrame()
+#         errors.append("symptom_precaution.csv not found.")
+#     return model, symptom_index, desc_df, prec_df, errors
+
+# model, symptom_index, description_df, precaution_df, load_errors = load_artifacts()
+
+# if load_errors:
+#     with st.sidebar:
 #         st.divider()
 #         st.markdown("### Missing Files")
 #         for e in load_errors:
@@ -454,12 +486,11 @@
 # # ════════════════════════════════════════════════════════════════
 
 # if st.session_state.disease:
-#     disease    = st.session_state.disease
-#     confidence = st.session_state.confidence
+#     disease       = st.session_state.disease
+#     confidence    = st.session_state.confidence
 #     probabilities = st.session_state.probabilities
-#     risk_level = st.session_state.risk_level or "MEDIUM"
+#     risk_level    = st.session_state.risk_level or "MEDIUM"
 
-#     # ── Result header ─────────────────────────────────────────
 #     r1, r2, r3 = st.columns([3, 1.2, 1.2])
 
 #     with r1:
@@ -489,13 +520,13 @@
 #         </div>
 #         """, unsafe_allow_html=True)
 
-#     # ── Top-3 ─────────────────────────────────────────────────
+#     # ── Top-3
 #     if probabilities is not None:
 #         st.markdown('<div class="section-title">Top 3 Possible Diagnoses</div>', unsafe_allow_html=True)
 #         top3_idx = np.argsort(probabilities[0])[-3:][::-1]
 #         for rank, idx in enumerate(top3_idx):
-#             name  = model.classes_[idx]
-#             pct   = probabilities[0][idx] * 100
+#             name   = model.classes_[idx]
+#             pct    = probabilities[0][idx] * 100
 #             marker = "1st" if rank == 0 else ("2nd" if rank == 1 else "3rd")
 #             st.markdown(f"""
 #             <div class="prob-bar-wrap">
@@ -504,7 +535,7 @@
 #             </div>
 #             """, unsafe_allow_html=True)
 
-#     # ── Tabs ──────────────────────────────────────────────────
+#     # ── Tabs
 #     tab_info, tab_ai, tab_chat, tab_export = st.tabs([
 #         "📋 Disease Info",
 #         "🤖 AI Explanation",
@@ -512,7 +543,7 @@
 #         "📥 Export Report",
 #     ])
 
-#     # ── TAB 1: Info ───────────────────────────────────────────
+#     # TAB 1: Info
 #     with tab_info:
 #         col_desc, col_prec = st.columns(2)
 
@@ -548,13 +579,13 @@
 
 #         st.markdown('<div class="section-title">Symptoms You Reported</div>', unsafe_allow_html=True)
 #         tags_html = " ".join(
-#             f'<span style="background:#1a2744;border:1px solid #1f3a6e;border-radius:999px;'
-#             f'padding:.2rem .7rem;font-size:.82rem;margin:.2rem;display:inline-block;">{s}</span>'
+#             f'<span style="background:{tag_bg};border:1px solid {tag_border};border-radius:999px;'
+#             f'padding:.2rem .7rem;font-size:.82rem;margin:.2rem;display:inline-block;color:{text};">{s}</span>'
 #             for s in st.session_state.selected_symptoms
 #         )
 #         st.markdown(f"<div>{tags_html}</div>", unsafe_allow_html=True)
 
-#     # ── TAB 2: AI Explanation ─────────────────────────────────
+#     # TAB 2: AI Explanation
 #     with tab_ai:
 #         if st.session_state.ai_explanation:
 #             st.markdown(st.session_state.ai_explanation)
@@ -568,7 +599,7 @@
 #                         st.error(f"AI error: {e}")
 #             st.info("Click the button above to get a detailed AI-generated medical overview.")
 
-#     # ── TAB 3: AI Chat ────────────────────────────────────────
+#     # TAB 3: AI Chat
 #     with tab_chat:
 #         st.markdown(f"**Chatting about:** `{disease}`")
 
@@ -621,12 +652,11 @@
 #                 st.session_state.chat_history = []
 #                 st.rerun()
 
-#     # ── TAB 4: Export ─────────────────────────────────────────
+#     # TAB 4: Export
 #     with tab_export:
 #         st.markdown("### Export Your Health Report")
 #         st.markdown("Download a summary of this prediction session for your records or to share with a doctor.")
 
-#         # JSON export
 #         report_data = {
 #             "generated_at": datetime.datetime.now().isoformat(),
 #             "predicted_disease": disease,
@@ -643,12 +673,9 @@
 #             mime="application/json",
 #         )
 
-#         # PDF export
 #         if PDF_AVAILABLE:
 #             if st.button("Generate and Download PDF Report"):
 #                 with st.spinner("Generating PDF…"):
-
-#                     # Get AI summary with retry
 #                     try:
 #                         summary_text = call_gemini_with_retry(
 #                             generate_health_report_summary,
@@ -662,24 +689,17 @@
 #                             "Please consult a healthcare professional for a proper diagnosis."
 #                         )
 
-#                     # ── Build PDF ──────────────────────────────────
 #                     pdf = FPDF()
 #                     pdf.add_page()
-
-#                     # Title
 #                     pdf.set_font("Helvetica", "B", 18)
 #                     pdf.set_text_color(31, 138, 255)
 #                     pdf.cell(0, 12, "MediAI Health Report", ln=True, align="C")
-
-#                     # Subtitle
 #                     pdf.set_font("Helvetica", "", 10)
 #                     pdf.set_text_color(100, 100, 100)
 #                     pdf.cell(0, 6,
 #                         safe_latin1(f"Generated: {datetime.datetime.now().strftime('%Y-%m-%d %H:%M')}"),
 #                         ln=True, align="C")
 #                     pdf.ln(8)
-
-#                     # Prediction summary
 #                     pdf.set_font("Helvetica", "B", 13)
 #                     pdf.set_text_color(30, 30, 30)
 #                     pdf.cell(0, 8, "Prediction Summary", ln=True)
@@ -690,24 +710,18 @@
 #                         ln=True)
 #                     pdf.cell(0, 7, safe_latin1(f"Risk Level: {risk_level}"), ln=True)
 #                     pdf.ln(4)
-
-#                     # Symptoms
 #                     pdf.set_font("Helvetica", "B", 13)
 #                     pdf.cell(0, 8, "Reported Symptoms", ln=True)
 #                     pdf.set_font("Helvetica", "", 11)
 #                     for s in st.session_state.selected_symptoms:
-#                         pdf.cell(0, 6, safe_latin1(f"  - {s}"), ln=True)   # ← dash, not bullet
+#                         pdf.cell(0, 6, safe_latin1(f"  - {s}"), ln=True)
 #                     pdf.ln(4)
-
-#                     # AI Summary
 #                     pdf.set_font("Helvetica", "B", 13)
 #                     pdf.set_text_color(30, 30, 30)
 #                     pdf.cell(0, 8, "AI Summary", ln=True)
 #                     pdf.set_font("Helvetica", "", 10)
-#                     pdf.multi_cell(0, 5.5, safe_latin1(summary_text))   # ← safe_latin1 strips unicode
+#                     pdf.multi_cell(0, 5.5, safe_latin1(summary_text))
 #                     pdf.ln(4)
-
-#                     # Disclaimer
 #                     pdf.set_font("Helvetica", "I", 8)
 #                     pdf.set_text_color(150, 150, 150)
 #                     pdf.multi_cell(0, 5,
@@ -715,8 +729,6 @@
 #                         "and should not be considered a medical diagnosis. "
 #                         "Please consult a qualified healthcare professional."
 #                     )
-
-#                     # Output
 #                     buf = io.BytesIO()
 #                     pdf.output(buf)
 #                     buf.seek(0)
@@ -745,7 +757,7 @@
 # """, unsafe_allow_html=True)
 
 
-import streamlit as st
+mport streamlit as st
 import pickle
 import pandas as pd
 import numpy as np
@@ -808,6 +820,55 @@ def call_gemini_with_retry(fn, *args, max_retries=3, **kwargs):
 
 
 # ════════════════════════════════════════════════════════════════
+# DISEASE → DOCTOR SPECIALTY MAP
+# ════════════════════════════════════════════════════════════════
+
+SPECIALTY_MAP = {
+    "Fungal infection": "dermatologist",
+    "Allergy": "allergist",
+    "GERD": "gastroenterologist",
+    "Chronic cholestasis": "gastroenterologist",
+    "Drug Reaction": "dermatologist",
+    "Peptic ulcer diseae": "gastroenterologist",
+    "AIDS": "infectious disease specialist",
+    "Diabetes": "endocrinologist",
+    "Gastroenteritis": "gastroenterologist",
+    "Bronchial Asthma": "pulmonologist",
+    "Hypertension": "cardiologist",
+    "Migraine": "neurologist",
+    "Cervical spondylosis": "orthopedist",
+    "Paralysis (brain hemorrhage)": "neurologist",
+    "Jaundice": "hepatologist",
+    "Malaria": "infectious disease specialist",
+    "Chicken pox": "dermatologist",
+    "Dengue": "infectious disease specialist",
+    "Typhoid": "infectious disease specialist",
+    "hepatitis A": "hepatologist",
+    "Hepatitis B": "hepatologist",
+    "Hepatitis C": "hepatologist",
+    "Hepatitis D": "hepatologist",
+    "Hepatitis E": "hepatologist",
+    "Alcoholic hepatitis": "hepatologist",
+    "Tuberculosis": "pulmonologist",
+    "Common Cold": "general physician",
+    "Pneumonia": "pulmonologist",
+    "Dimorphic hemmorhoids(piles)": "proctologist",
+    "Heart attack": "cardiologist",
+    "Varicose veins": "vascular surgeon",
+    "Hypothyroidism": "endocrinologist",
+    "Hyperthyroidism": "endocrinologist",
+    "Hypoglycemia": "endocrinologist",
+    "Osteoarthristis": "orthopedist",
+    "Arthritis": "rheumatologist",
+    "(vertigo) Paroymsal Positional Vertigo": "neurologist",
+    "Acne": "dermatologist",
+    "Urinary tract infection": "urologist",
+    "Psoriasis": "dermatologist",
+    "Impetigo": "dermatologist",
+}
+
+
+# ════════════════════════════════════════════════════════════════
 # SESSION STATE DEFAULTS
 # ════════════════════════════════════════════════════════════════
 
@@ -822,6 +883,8 @@ for key, default in {
     "ai_explanation": None,
     "history_log": [],
     "theme": "🌙 Dark Mode",
+    "search_location": "",
+    "show_doctors": False,
 }.items():
     if key not in st.session_state:
         st.session_state[key] = default
@@ -836,7 +899,7 @@ with st.sidebar:
     st.caption("AI-Powered Disease Prediction")
     st.divider()
 
-    # ── THEME TOGGLE ──────────────────────────────────────────
+    # ── THEME TOGGLE
     st.markdown("### 🎨 Theme")
     theme = st.radio(
         "Select theme",
@@ -848,6 +911,7 @@ with st.sidebar:
     st.session_state.theme = theme
     st.divider()
 
+    # ── SESSION SUMMARY
     st.markdown("### 📋 Session Summary")
     if st.session_state.disease:
         st.markdown(f"**Last Prediction:** {st.session_state.disease}")
@@ -864,6 +928,7 @@ with st.sidebar:
 
     st.divider()
 
+    # ── BMI CALCULATOR
     st.markdown("### ⚖️ BMI Calculator")
     bmi_weight = st.number_input("Weight (kg)", min_value=1.0, max_value=300.0, value=70.0, step=0.5)
     bmi_height = st.number_input("Height (cm)", min_value=50.0, max_value=250.0, value=170.0, step=0.5)
@@ -882,6 +947,33 @@ with st.sidebar:
 
     st.divider()
 
+    # ── NEARBY DOCTOR FINDER (sidebar quick access)
+    st.markdown("### 🏥 Nearby Doctor Finder")
+    st.caption("Find doctors based on your prediction")
+    user_location = st.text_input(
+        "📍 Your city / area",
+        placeholder="e.g. Kanpur, UP",
+        key="sidebar_location",
+    )
+    if user_location:
+        st.session_state.search_location = user_location
+    if st.session_state.disease and user_location:
+        doctor_type_sidebar = SPECIALTY_MAP.get(st.session_state.disease, "general physician")
+        maps_url_sidebar = f"https://www.google.com/maps/search/{doctor_type_sidebar.replace(' ', '+')}+near+{user_location.replace(' ', '+')}"
+        st.markdown(f"""
+        <a href="{maps_url_sidebar}" target="_blank" style="
+            display:block; text-align:center; padding:0.6rem;
+            background:linear-gradient(135deg,#1f8aff,#0d6bcc);
+            color:white; border-radius:8px; text-decoration:none;
+            font-weight:600; font-size:0.82rem; margin-top:0.5rem;
+        ">🗺️ Open Google Maps</a>
+        """, unsafe_allow_html=True)
+    elif not st.session_state.disease:
+        st.caption("⚠️ Predict a disease first.")
+
+    st.divider()
+
+    # ── PREDICTION HISTORY
     st.markdown("### 🕘 Prediction History")
     if st.session_state.history_log:
         for entry in reversed(st.session_state.history_log[-5:]):
@@ -896,6 +988,12 @@ with st.sidebar:
     st.caption("For educational use only. Not a substitute for medical advice.")
     st.caption("Built by **Krishna Yadav**")
 
+    if load_errors if 'load_errors' in dir() else False:
+        st.divider()
+        st.markdown("### Missing Files")
+        for e in load_errors:
+            st.error(e)
+
 
 # ════════════════════════════════════════════════════════════════
 # DYNAMIC CSS  (switches based on theme)
@@ -904,31 +1002,35 @@ with st.sidebar:
 is_dark = st.session_state.theme == "🌙 Dark Mode"
 
 if is_dark:
-    bg        = "#0d1117"
-    surface   = "#161b22"
-    card      = "#1c2333"
-    border    = "#30363d"
-    text      = "#e6edf3"
-    muted     = "#8b949e"
-    hero_grad = "linear-gradient(135deg, #0f2027 0%, #203a43 50%, #1a2a3a 100%)"
+    bg               = "#0d1117"
+    surface          = "#161b22"
+    card             = "#1c2333"
+    border           = "#30363d"
+    text             = "#e6edf3"
+    muted            = "#8b949e"
+    hero_grad        = "linear-gradient(135deg, #0f2027 0%, #203a43 50%, #1a2a3a 100%)"
     chat_user_bg     = "#1a2744"
     chat_user_border = "#1f3a6e"
     tag_bg           = "#1a2744"
     tag_border       = "#1f3a6e"
     input_bg         = "#161b22"
+    doc_card_bg      = "#1c2333"
+    doc_card_border  = "#30363d"
 else:
-    bg        = "#f0f4f8"
-    surface   = "#ffffff"
-    card      = "#ffffff"
-    border    = "#d1d9e0"
-    text      = "#1c2333"
-    muted     = "#57606a"
-    hero_grad = "linear-gradient(135deg, #dbeafe 0%, #ede9fe 50%, #d1fae5 100%)"
+    bg               = "#f0f4f8"
+    surface          = "#ffffff"
+    card             = "#ffffff"
+    border           = "#d1d9e0"
+    text             = "#1c2333"
+    muted            = "#57606a"
+    hero_grad        = "linear-gradient(135deg, #dbeafe 0%, #ede9fe 50%, #d1fae5 100%)"
     chat_user_bg     = "#dbeafe"
     chat_user_border = "#93c5fd"
     tag_bg           = "#ede9fe"
     tag_border       = "#a78bfa"
     input_bg         = "#ffffff"
+    doc_card_bg      = "#f8faff"
+    doc_card_border  = "#c7d7f0"
 
 st.markdown(f"""
 <style>
@@ -1092,6 +1194,31 @@ input, textarea, [data-baseweb="input"] {{
     border-bottom: 1px solid var(--border);
     padding-bottom: .5rem;
     margin: 1.5rem 0 1rem;
+}}
+
+.doc-platform-btn {{
+    display: block;
+    text-align: center;
+    padding: 0.75rem 0.5rem;
+    border-radius: 10px;
+    text-decoration: none;
+    font-weight: 600;
+    font-size: 0.88rem;
+    transition: opacity 0.2s;
+    margin-bottom: 0.5rem;
+}}
+.doc-platform-btn:hover {{ opacity: 0.85; }}
+
+.specialty-badge {{
+    display: inline-block;
+    background: linear-gradient(135deg, #1f8aff22, #0acf9722);
+    border: 1px solid #1f8aff44;
+    color: #1f8aff;
+    padding: 0.4rem 1rem;
+    border-radius: 999px;
+    font-size: 0.85rem;
+    font-weight: 600;
+    margin-bottom: 1rem;
 }}
 
 .medi-footer {{
@@ -1280,14 +1407,15 @@ if st.session_state.disease:
             """, unsafe_allow_html=True)
 
     # ── Tabs
-    tab_info, tab_ai, tab_chat, tab_export = st.tabs([
+    tab_info, tab_ai, tab_chat, tab_export, tab_doctors = st.tabs([
         "📋 Disease Info",
         "🤖 AI Explanation",
         "💬 Ask AI Doctor",
         "📥 Export Report",
+        "🏥 Nearby Doctors",
     ])
 
-    # TAB 1: Info
+    # ── TAB 1: Info
     with tab_info:
         col_desc, col_prec = st.columns(2)
 
@@ -1329,7 +1457,7 @@ if st.session_state.disease:
         )
         st.markdown(f"<div>{tags_html}</div>", unsafe_allow_html=True)
 
-    # TAB 2: AI Explanation
+    # ── TAB 2: AI Explanation
     with tab_ai:
         if st.session_state.ai_explanation:
             st.markdown(st.session_state.ai_explanation)
@@ -1343,7 +1471,7 @@ if st.session_state.disease:
                         st.error(f"AI error: {e}")
             st.info("Click the button above to get a detailed AI-generated medical overview.")
 
-    # TAB 3: AI Chat
+    # ── TAB 3: AI Chat
     with tab_chat:
         st.markdown(f"**Chatting about:** `{disease}`")
 
@@ -1396,7 +1524,7 @@ if st.session_state.disease:
                 st.session_state.chat_history = []
                 st.rerun()
 
-    # TAB 4: Export
+    # ── TAB 4: Export
     with tab_export:
         st.markdown("### Export Your Health Report")
         st.markdown("Download a summary of this prediction session for your records or to share with a doctor.")
@@ -1486,6 +1614,122 @@ if st.session_state.disease:
                     )
         else:
             st.info("PDF export requires fpdf2. Run: python -m pip install fpdf2")
+
+    # ── TAB 5: Nearby Doctors ─────────────────────────────────
+    with tab_doctors:
+        doctor_type = SPECIALTY_MAP.get(disease, "general physician")
+
+        st.markdown(f"""
+        <div style="margin-bottom:1rem;">
+            <div style="font-size:0.78rem;color:var(--muted);text-transform:uppercase;
+                        letter-spacing:0.1em;margin-bottom:0.4rem;">Recommended Specialist</div>
+            <span class="specialty-badge">🩺 {doctor_type.title()}</span>
+            <div style="font-size:0.85rem;color:var(--muted);">
+                Based on your prediction: <strong style="color:var(--text);">{disease}</strong>
+            </div>
+        </div>
+        """, unsafe_allow_html=True)
+
+        col_loc, col_btn2 = st.columns([3, 1])
+        with col_loc:
+            search_city = st.text_input(
+                "📍 Enter your city / area",
+                placeholder="e.g. Kanpur, Uttar Pradesh",
+                key="doctor_location",
+                value=st.session_state.get("search_location", ""),
+            )
+        with col_btn2:
+            st.markdown("<br>", unsafe_allow_html=True)
+            search_clicked = st.button("🔍 Search", key="search_doc_btn", use_container_width=True)
+
+        if search_clicked and search_city:
+            st.session_state.search_location = search_city
+            st.session_state.show_doctors = True
+
+        if st.session_state.show_doctors and st.session_state.search_location:
+            city      = st.session_state.search_location
+            q_encoded = f"{doctor_type}+near+{city}".replace(" ", "+")
+            maps_url  = f"https://www.google.com/maps/search/{q_encoded}"
+
+            # Main Google Maps CTA
+            st.markdown(f"""
+            <div class="medi-card" style="text-align:center; padding:2rem;">
+                <div style="font-size:2.5rem; margin-bottom:0.75rem;">🗺️</div>
+                <p style="color:var(--muted); margin-bottom:1.2rem; font-size:0.95rem;">
+                    Finding <strong style="color:var(--text);">{doctor_type.title()}s</strong>
+                    near <strong style="color:var(--text);">{city}</strong>
+                </p>
+                <a href="{maps_url}" target="_blank" style="
+                    background: linear-gradient(135deg, #1f8aff, #0d6bcc);
+                    color: white; padding: 0.75rem 2.5rem;
+                    border-radius: 10px; text-decoration: none;
+                    font-weight: 700; font-size: 1rem;
+                    display: inline-block;
+                ">🔍 Open Google Maps</a>
+            </div>
+            """, unsafe_allow_html=True)
+
+            # Platform quick links
+            st.markdown('<div class="section-title">Book on Indian Platforms</div>', unsafe_allow_html=True)
+
+            city_short   = city.split(",")[0].strip()
+            practo_url   = f"https://www.practo.com/search/doctors?results_type=doctor&q={doctor_type.replace(' ', '%20')}&city={city_short}"
+            apollo_url   = f"https://www.apollohospitals.com/find-a-doctor/?speciality={doctor_type.replace(' ', '%20')}"
+            justdial_url = f"https://www.justdial.com/{city_short.replace(' ', '-')}/{doctor_type.replace(' ', '-')}"
+            lybrate_url  = f"https://www.lybrate.com/doctors/{doctor_type.replace(' ', '-')}/{city_short.lower().replace(' ', '-')}"
+
+            p1, p2, p3, p4 = st.columns(4)
+            with p1:
+                st.markdown(f"""
+                <a href="{practo_url}" target="_blank" class="doc-platform-btn"
+                   style="background:#00a651; color:white;">
+                   🟢<br>Practo
+                </a>""", unsafe_allow_html=True)
+            with p2:
+                st.markdown(f"""
+                <a href="{apollo_url}" target="_blank" class="doc-platform-btn"
+                   style="background:#e63946; color:white;">
+                   🏥<br>Apollo
+                </a>""", unsafe_allow_html=True)
+            with p3:
+                st.markdown(f"""
+                <a href="{justdial_url}" target="_blank" class="doc-platform-btn"
+                   style="background:#ff6b00; color:white;">
+                   🟠<br>JustDial
+                </a>""", unsafe_allow_html=True)
+            with p4:
+                st.markdown(f"""
+                <a href="{lybrate_url}" target="_blank" class="doc-platform-btn"
+                   style="background:#7c3aed; color:white;">
+                   💜<br>Lybrate
+                </a>""", unsafe_allow_html=True)
+
+            # Emergency info for HIGH risk
+            if risk_level == "HIGH":
+                st.markdown("""
+                <div style="background:#2d0a0a; border:1px solid #ef444460;
+                            border-radius:12px; padding:1rem 1.5rem; margin-top:1rem;">
+                    <strong style="color:#ef4444;">🚨 High Risk — Seek Immediate Help</strong><br>
+                    <span style="color:#e6edf3; font-size:0.9rem;">
+                        Call <strong>108</strong> (Ambulance) or go to the nearest emergency room immediately.
+                    </span>
+                </div>
+                """, unsafe_allow_html=True)
+
+            st.markdown("<br>", unsafe_allow_html=True)
+            st.warning("⚠️ Always verify doctor credentials before booking. This is for guidance only.")
+
+        else:
+            st.markdown(f"""
+            <div class="medi-card" style="text-align:center; padding:2.5rem;">
+                <div style="font-size:3rem; margin-bottom:1rem;">🏥</div>
+                <p style="color:var(--muted); font-size:0.95rem;">
+                    Enter your city above and click <strong style="color:var(--text);">Search</strong><br>
+                    to find nearby <strong style="color:var(--text);">{doctor_type.title()}s</strong>
+                    and book appointments on Practo, Apollo, JustDial & more.
+                </p>
+            </div>
+            """, unsafe_allow_html=True)
 
 
 # ════════════════════════════════════════════════════════════════
