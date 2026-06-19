@@ -1,6 +1,3 @@
-
-
-
 # import streamlit as st
 # import pickle
 # import pandas as pd
@@ -11,7 +8,7 @@
 # import time
 
 # # ════════════════════════════════════════════════════════════════
-# # PAGE CONFIG  (only once — at the very top)
+# # PAGE CONFIG  
 # # ════════════════════════════════════════════════════════════════
 
 # st.set_page_config(
@@ -64,6 +61,55 @@
 
 
 # # ════════════════════════════════════════════════════════════════
+# # DISEASE → DOCTOR SPECIALTY MAP
+# # ════════════════════════════════════════════════════════════════
+
+# SPECIALTY_MAP = {
+#     "Fungal infection": "dermatologist",
+#     "Allergy": "allergist",
+#     "GERD": "gastroenterologist",
+#     "Chronic cholestasis": "gastroenterologist",
+#     "Drug Reaction": "dermatologist",
+#     "Peptic ulcer diseae": "gastroenterologist",
+#     "AIDS": "infectious disease specialist",
+#     "Diabetes": "endocrinologist",
+#     "Gastroenteritis": "gastroenterologist",
+#     "Bronchial Asthma": "pulmonologist",
+#     "Hypertension": "cardiologist",
+#     "Migraine": "neurologist",
+#     "Cervical spondylosis": "orthopedist",
+#     "Paralysis (brain hemorrhage)": "neurologist",
+#     "Jaundice": "hepatologist",
+#     "Malaria": "infectious disease specialist",
+#     "Chicken pox": "dermatologist",
+#     "Dengue": "infectious disease specialist",
+#     "Typhoid": "infectious disease specialist",
+#     "hepatitis A": "hepatologist",
+#     "Hepatitis B": "hepatologist",
+#     "Hepatitis C": "hepatologist",
+#     "Hepatitis D": "hepatologist",
+#     "Hepatitis E": "hepatologist",
+#     "Alcoholic hepatitis": "hepatologist",
+#     "Tuberculosis": "pulmonologist",
+#     "Common Cold": "general physician",
+#     "Pneumonia": "pulmonologist",
+#     "Dimorphic hemmorhoids(piles)": "proctologist",
+#     "Heart attack": "cardiologist",
+#     "Varicose veins": "vascular surgeon",
+#     "Hypothyroidism": "endocrinologist",
+#     "Hyperthyroidism": "endocrinologist",
+#     "Hypoglycemia": "endocrinologist",
+#     "Osteoarthristis": "orthopedist",
+#     "Arthritis": "rheumatologist",
+#     "(vertigo) Paroymsal Positional Vertigo": "neurologist",
+#     "Acne": "dermatologist",
+#     "Urinary tract infection": "urologist",
+#     "Psoriasis": "dermatologist",
+#     "Impetigo": "dermatologist",
+# }
+
+
+# # ════════════════════════════════════════════════════════════════
 # # SESSION STATE DEFAULTS
 # # ════════════════════════════════════════════════════════════════
 
@@ -78,6 +124,8 @@
 #     "ai_explanation": None,
 #     "history_log": [],
 #     "theme": "🌙 Dark Mode",
+#     "search_location": "",
+#     "show_doctors": False,
 # }.items():
 #     if key not in st.session_state:
 #         st.session_state[key] = default
@@ -92,7 +140,7 @@
 #     st.caption("AI-Powered Disease Prediction")
 #     st.divider()
 
-#     # ── THEME TOGGLE ──────────────────────────────────────────
+#     # ── THEME TOGGLE
 #     st.markdown("### 🎨 Theme")
 #     theme = st.radio(
 #         "Select theme",
@@ -104,6 +152,7 @@
 #     st.session_state.theme = theme
 #     st.divider()
 
+#     # ── SESSION SUMMARY
 #     st.markdown("### 📋 Session Summary")
 #     if st.session_state.disease:
 #         st.markdown(f"**Last Prediction:** {st.session_state.disease}")
@@ -120,6 +169,7 @@
 
 #     st.divider()
 
+#     # ── BMI CALCULATOR
 #     st.markdown("### ⚖️ BMI Calculator")
 #     bmi_weight = st.number_input("Weight (kg)", min_value=1.0, max_value=300.0, value=70.0, step=0.5)
 #     bmi_height = st.number_input("Height (cm)", min_value=50.0, max_value=250.0, value=170.0, step=0.5)
@@ -138,6 +188,33 @@
 
 #     st.divider()
 
+#     # ── NEARBY DOCTOR FINDER (sidebar quick access)
+#     st.markdown("### 🏥 Nearby Doctor Finder")
+#     st.caption("Find doctors based on your prediction")
+#     user_location = st.text_input(
+#         "📍 Your city / area",
+#         placeholder="e.g. Kanpur, UP",
+#         key="sidebar_location",
+#     )
+#     if user_location:
+#         st.session_state.search_location = user_location
+#     if st.session_state.disease and user_location:
+#         doctor_type_sidebar = SPECIALTY_MAP.get(st.session_state.disease, "general physician")
+#         maps_url_sidebar = f"https://www.google.com/maps/search/{doctor_type_sidebar.replace(' ', '+')}+near+{user_location.replace(' ', '+')}"
+#         st.markdown(f"""
+#         <a href="{maps_url_sidebar}" target="_blank" style="
+#             display:block; text-align:center; padding:0.6rem;
+#             background:linear-gradient(135deg,#1f8aff,#0d6bcc);
+#             color:white; border-radius:8px; text-decoration:none;
+#             font-weight:600; font-size:0.82rem; margin-top:0.5rem;
+#         ">🗺️ Open Google Maps</a>
+#         """, unsafe_allow_html=True)
+#     elif not st.session_state.disease:
+#         st.caption("⚠️ Predict a disease first.")
+
+#     st.divider()
+
+#     # ── PREDICTION HISTORY
 #     st.markdown("### 🕘 Prediction History")
 #     if st.session_state.history_log:
 #         for entry in reversed(st.session_state.history_log[-5:]):
@@ -152,6 +229,12 @@
 #     st.caption("For educational use only. Not a substitute for medical advice.")
 #     st.caption("Built by **Krishna Yadav**")
 
+#     if load_errors if 'load_errors' in dir() else False:
+#         st.divider()
+#         st.markdown("### Missing Files")
+#         for e in load_errors:
+#             st.error(e)
+
 
 # # ════════════════════════════════════════════════════════════════
 # # DYNAMIC CSS  (switches based on theme)
@@ -160,31 +243,35 @@
 # is_dark = st.session_state.theme == "🌙 Dark Mode"
 
 # if is_dark:
-#     bg        = "#0d1117"
-#     surface   = "#161b22"
-#     card      = "#1c2333"
-#     border    = "#30363d"
-#     text      = "#e6edf3"
-#     muted     = "#8b949e"
-#     hero_grad = "linear-gradient(135deg, #0f2027 0%, #203a43 50%, #1a2a3a 100%)"
+#     bg               = "#0d1117"
+#     surface          = "#161b22"
+#     card             = "#1c2333"
+#     border           = "#30363d"
+#     text             = "#e6edf3"
+#     muted            = "#8b949e"
+#     hero_grad        = "linear-gradient(135deg, #0f2027 0%, #203a43 50%, #1a2a3a 100%)"
 #     chat_user_bg     = "#1a2744"
 #     chat_user_border = "#1f3a6e"
 #     tag_bg           = "#1a2744"
 #     tag_border       = "#1f3a6e"
 #     input_bg         = "#161b22"
+#     doc_card_bg      = "#1c2333"
+#     doc_card_border  = "#30363d"
 # else:
-#     bg        = "#f0f4f8"
-#     surface   = "#ffffff"
-#     card      = "#ffffff"
-#     border    = "#d1d9e0"
-#     text      = "#1c2333"
-#     muted     = "#57606a"
-#     hero_grad = "linear-gradient(135deg, #dbeafe 0%, #ede9fe 50%, #d1fae5 100%)"
+#     bg               = "#f0f4f8"
+#     surface          = "#ffffff"
+#     card             = "#ffffff"
+#     border           = "#d1d9e0"
+#     text             = "#1c2333"
+#     muted            = "#57606a"
+#     hero_grad        = "linear-gradient(135deg, #dbeafe 0%, #ede9fe 50%, #d1fae5 100%)"
 #     chat_user_bg     = "#dbeafe"
 #     chat_user_border = "#93c5fd"
 #     tag_bg           = "#ede9fe"
 #     tag_border       = "#a78bfa"
 #     input_bg         = "#ffffff"
+#     doc_card_bg      = "#f8faff"
+#     doc_card_border  = "#c7d7f0"
 
 # st.markdown(f"""
 # <style>
@@ -348,6 +435,31 @@
 #     border-bottom: 1px solid var(--border);
 #     padding-bottom: .5rem;
 #     margin: 1.5rem 0 1rem;
+# }}
+
+# .doc-platform-btn {{
+#     display: block;
+#     text-align: center;
+#     padding: 0.75rem 0.5rem;
+#     border-radius: 10px;
+#     text-decoration: none;
+#     font-weight: 600;
+#     font-size: 0.88rem;
+#     transition: opacity 0.2s;
+#     margin-bottom: 0.5rem;
+# }}
+# .doc-platform-btn:hover {{ opacity: 0.85; }}
+
+# .specialty-badge {{
+#     display: inline-block;
+#     background: linear-gradient(135deg, #1f8aff22, #0acf9722);
+#     border: 1px solid #1f8aff44;
+#     color: #1f8aff;
+#     padding: 0.4rem 1rem;
+#     border-radius: 999px;
+#     font-size: 0.85rem;
+#     font-weight: 600;
+#     margin-bottom: 1rem;
 # }}
 
 # .medi-footer {{
@@ -536,14 +648,15 @@
 #             """, unsafe_allow_html=True)
 
 #     # ── Tabs
-#     tab_info, tab_ai, tab_chat, tab_export = st.tabs([
+#     tab_info, tab_ai, tab_chat, tab_export, tab_doctors = st.tabs([
 #         "📋 Disease Info",
 #         "🤖 AI Explanation",
 #         "💬 Ask AI Doctor",
 #         "📥 Export Report",
+#         "🏥 Nearby Doctors",
 #     ])
 
-#     # TAB 1: Info
+#     # ── TAB 1: Info
 #     with tab_info:
 #         col_desc, col_prec = st.columns(2)
 
@@ -585,7 +698,7 @@
 #         )
 #         st.markdown(f"<div>{tags_html}</div>", unsafe_allow_html=True)
 
-#     # TAB 2: AI Explanation
+#     # ── TAB 2: AI Explanation
 #     with tab_ai:
 #         if st.session_state.ai_explanation:
 #             st.markdown(st.session_state.ai_explanation)
@@ -599,7 +712,7 @@
 #                         st.error(f"AI error: {e}")
 #             st.info("Click the button above to get a detailed AI-generated medical overview.")
 
-#     # TAB 3: AI Chat
+#     # ── TAB 3: AI Chat
 #     with tab_chat:
 #         st.markdown(f"**Chatting about:** `{disease}`")
 
@@ -652,7 +765,7 @@
 #                 st.session_state.chat_history = []
 #                 st.rerun()
 
-#     # TAB 4: Export
+#     # ── TAB 4: Export
 #     with tab_export:
 #         st.markdown("### Export Your Health Report")
 #         st.markdown("Download a summary of this prediction session for your records or to share with a doctor.")
@@ -743,6 +856,122 @@
 #         else:
 #             st.info("PDF export requires fpdf2. Run: python -m pip install fpdf2")
 
+#     # ── TAB 5: Nearby Doctors ─────────────────────────────────
+#     with tab_doctors:
+#         doctor_type = SPECIALTY_MAP.get(disease, "general physician")
+
+#         st.markdown(f"""
+#         <div style="margin-bottom:1rem;">
+#             <div style="font-size:0.78rem;color:var(--muted);text-transform:uppercase;
+#                         letter-spacing:0.1em;margin-bottom:0.4rem;">Recommended Specialist</div>
+#             <span class="specialty-badge">🩺 {doctor_type.title()}</span>
+#             <div style="font-size:0.85rem;color:var(--muted);">
+#                 Based on your prediction: <strong style="color:var(--text);">{disease}</strong>
+#             </div>
+#         </div>
+#         """, unsafe_allow_html=True)
+
+#         col_loc, col_btn2 = st.columns([3, 1])
+#         with col_loc:
+#             search_city = st.text_input(
+#                 "📍 Enter your city / area",
+#                 placeholder="e.g. Kanpur, Uttar Pradesh",
+#                 key="doctor_location",
+#                 value=st.session_state.get("search_location", ""),
+#             )
+#         with col_btn2:
+#             st.markdown("<br>", unsafe_allow_html=True)
+#             search_clicked = st.button("🔍 Search", key="search_doc_btn", use_container_width=True)
+
+#         if search_clicked and search_city:
+#             st.session_state.search_location = search_city
+#             st.session_state.show_doctors = True
+
+#         if st.session_state.show_doctors and st.session_state.search_location:
+#             city      = st.session_state.search_location
+#             q_encoded = f"{doctor_type}+near+{city}".replace(" ", "+")
+#             maps_url  = f"https://www.google.com/maps/search/{q_encoded}"
+
+#             # Main Google Maps CTA
+#             st.markdown(f"""
+#             <div class="medi-card" style="text-align:center; padding:2rem;">
+#                 <div style="font-size:2.5rem; margin-bottom:0.75rem;">🗺️</div>
+#                 <p style="color:var(--muted); margin-bottom:1.2rem; font-size:0.95rem;">
+#                     Finding <strong style="color:var(--text);">{doctor_type.title()}s</strong>
+#                     near <strong style="color:var(--text);">{city}</strong>
+#                 </p>
+#                 <a href="{maps_url}" target="_blank" style="
+#                     background: linear-gradient(135deg, #1f8aff, #0d6bcc);
+#                     color: white; padding: 0.75rem 2.5rem;
+#                     border-radius: 10px; text-decoration: none;
+#                     font-weight: 700; font-size: 1rem;
+#                     display: inline-block;
+#                 ">🔍 Open Google Maps</a>
+#             </div>
+#             """, unsafe_allow_html=True)
+
+#             # Platform quick links
+#             st.markdown('<div class="section-title">Book on Indian Platforms</div>', unsafe_allow_html=True)
+
+#             city_short   = city.split(",")[0].strip()
+#             practo_url   = f"https://www.practo.com/search/doctors?results_type=doctor&q={doctor_type.replace(' ', '%20')}&city={city_short}"
+#             apollo_url   = f"https://www.apollohospitals.com/find-a-doctor/?speciality={doctor_type.replace(' ', '%20')}"
+#             justdial_url = f"https://www.justdial.com/{city_short.replace(' ', '-')}/{doctor_type.replace(' ', '-')}"
+#             lybrate_url  = f"https://www.lybrate.com/doctors/{doctor_type.replace(' ', '-')}/{city_short.lower().replace(' ', '-')}"
+
+#             p1, p2, p3, p4 = st.columns(4)
+#             with p1:
+#                 st.markdown(f"""
+#                 <a href="{practo_url}" target="_blank" class="doc-platform-btn"
+#                    style="background:#00a651; color:white;">
+#                    🟢<br>Practo
+#                 </a>""", unsafe_allow_html=True)
+#             with p2:
+#                 st.markdown(f"""
+#                 <a href="{apollo_url}" target="_blank" class="doc-platform-btn"
+#                    style="background:#e63946; color:white;">
+#                    🏥<br>Apollo
+#                 </a>""", unsafe_allow_html=True)
+#             with p3:
+#                 st.markdown(f"""
+#                 <a href="{justdial_url}" target="_blank" class="doc-platform-btn"
+#                    style="background:#ff6b00; color:white;">
+#                    🟠<br>JustDial
+#                 </a>""", unsafe_allow_html=True)
+#             with p4:
+#                 st.markdown(f"""
+#                 <a href="{lybrate_url}" target="_blank" class="doc-platform-btn"
+#                    style="background:#7c3aed; color:white;">
+#                    💜<br>Lybrate
+#                 </a>""", unsafe_allow_html=True)
+
+#             # Emergency info for HIGH risk
+#             if risk_level == "HIGH":
+#                 st.markdown("""
+#                 <div style="background:#2d0a0a; border:1px solid #ef444460;
+#                             border-radius:12px; padding:1rem 1.5rem; margin-top:1rem;">
+#                     <strong style="color:#ef4444;">🚨 High Risk — Seek Immediate Help</strong><br>
+#                     <span style="color:#e6edf3; font-size:0.9rem;">
+#                         Call <strong>108</strong> (Ambulance) or go to the nearest emergency room immediately.
+#                     </span>
+#                 </div>
+#                 """, unsafe_allow_html=True)
+
+#             st.markdown("<br>", unsafe_allow_html=True)
+#             st.warning("⚠️ Always verify doctor credentials before booking. This is for guidance only.")
+
+#         else:
+#             st.markdown(f"""
+#             <div class="medi-card" style="text-align:center; padding:2.5rem;">
+#                 <div style="font-size:3rem; margin-bottom:1rem;">🏥</div>
+#                 <p style="color:var(--muted); font-size:0.95rem;">
+#                     Enter your city above and click <strong style="color:var(--text);">Search</strong><br>
+#                     to find nearby <strong style="color:var(--text);">{doctor_type.title()}s</strong>
+#                     and book appointments on Practo, Apollo, JustDial & more.
+#                 </p>
+#             </div>
+#             """, unsafe_allow_html=True)
+
 
 # # ════════════════════════════════════════════════════════════════
 # # FOOTER
@@ -757,7 +986,8 @@
 # """, unsafe_allow_html=True)
 
 
-mport streamlit as st
+
+import streamlit as st
 import pickle
 import pandas as pd
 import numpy as np
@@ -767,7 +997,7 @@ import io
 import time
 
 # ════════════════════════════════════════════════════════════════
-# PAGE CONFIG  (only once — at the very top)
+# PAGE CONFIG
 # ════════════════════════════════════════════════════════════════
 
 st.set_page_config(
@@ -869,6 +1099,91 @@ SPECIALTY_MAP = {
 
 
 # ════════════════════════════════════════════════════════════════
+# BODY MAP ZONES → SYMPTOM GROUPS
+# ════════════════════════════════════════════════════════════════
+
+BODY_ZONES = {
+    "head": {
+        "label": "🧠 Head & Vision",
+        "symptoms": [
+            "headache", "dizziness", "blurred_and_distorted_vision", "loss_of_balance",
+            "spinning_movements", "visual_disturbances", "pain_behind_the_eyes",
+            "redness_of_eyes", "watering_from_eyes", "sunken_eyes", "puffy_face_and_eyes",
+            "loss_of_smell", "slurred_speech", "lack_of_concentration", "altered_sensorium",
+            "unsteadiness", "coma", "weakness_of_one_body_side",
+        ],
+    },
+    "chest": {
+        "label": "🫁 Chest & Breathing",
+        "symptoms": [
+            "chest_pain", "breathlessness", "cough", "fast_heart_rate", "palpitations",
+            "phlegm", "mucoid_sputum", "rusty_sputum", "blood_in_sputum", "congestion",
+            "runny_nose", "continuous_sneezing", "sinus_pressure", "throat_irritation",
+            "patches_in_throat",
+        ],
+    },
+    "stomach": {
+        "label": "🤢 Stomach & Digestion",
+        "symptoms": [
+            "stomach_pain", "vomiting", "nausea", "abdominal_pain", "belly_pain",
+            "diarrhoea", "constipation", "indigestion", "acidity", "distention_of_abdomen",
+            "swelling_of_stomach", "stomach_bleeding", "bloody_stool", "passage_of_gases",
+            "pain_during_bowel_movements", "loss_of_appetite", "excessive_hunger",
+            "increased_appetite", "dehydration",
+        ],
+    },
+    "skin": {
+        "label": "🩹 Skin & Nails",
+        "symptoms": [
+            "itching", "skin_rash", "nodal_skin_eruptions", "yellowish_skin",
+            "pus_filled_pimples", "blackheads", "blister", "red_sore_around_nose",
+            "yellow_crust_ooze", "skin_peeling", "silver_like_dusting",
+            "dischromic _patches", "red_spots_over_body", "bruising", "brittle_nails",
+            "small_dents_in_nails", "inflammatory_nails", "scurring",
+        ],
+    },
+    "joints": {
+        "label": "🦴 Joints, Back & Muscles",
+        "symptoms": [
+            "joint_pain", "muscle_weakness", "muscle_pain", "muscle_wasting",
+            "swelling_joints", "movement_stiffness", "back_pain", "neck_pain",
+            "stiff_neck", "knee_pain", "hip_joint_pain", "painful_walking",
+            "weakness_in_limbs", "cramps", "swollen_legs", "swollen_extremeties",
+            "prominent_veins_on_calf", "swollen_blood_vessels",
+        ],
+    },
+    "urinary": {
+        "label": "🚽 Urinary & Reproductive",
+        "symptoms": [
+            "burning_micturition", "bladder_discomfort", "continuous_feel_of_urine",
+            "foul_smell_of urine", "dark_urine", "yellow_urine", "polyuria",
+            "spotting_ urination", "abnormal_menstruation", "extra_marital_contacts",
+            "irritation_in_anus", "pain_in_anal_region", "internal_itching",
+        ],
+    },
+    "general": {
+        "label": "🌡️ General & Fever",
+        "symptoms": [
+            "high_fever", "mild_fever", "fatigue", "chills", "shivering", "sweating",
+            "malaise", "lethargy", "weight_loss", "weight_gain", "obesity",
+            "cold_hands_and_feets", "irregular_sugar_level", "toxic_look_(typhos)",
+            "fluid_overload", "swelled_lymph_nodes", "ulcers_on_tongue",
+            "drying_and_tingling_lips", "enlarged_thyroid",
+        ],
+    },
+    "mental": {
+        "label": "🧠 Mood & Behaviour",
+        "symptoms": [
+            "anxiety", "depression", "mood_swings", "irritability", "restlessness",
+            "history_of_alcohol_consumption", "family_history",
+            "receiving_blood_transfusion", "receiving_unsterile_injections",
+            "acute_liver_failure",
+        ],
+    },
+}
+
+
+# ════════════════════════════════════════════════════════════════
 # SESSION STATE DEFAULTS
 # ════════════════════════════════════════════════════════════════
 
@@ -885,6 +1200,7 @@ for key, default in {
     "theme": "🌙 Dark Mode",
     "search_location": "",
     "show_doctors": False,
+    "body_selected": [],
 }.items():
     if key not in st.session_state:
         st.session_state[key] = default
@@ -988,12 +1304,6 @@ with st.sidebar:
     st.caption("For educational use only. Not a substitute for medical advice.")
     st.caption("Built by **Krishna Yadav**")
 
-    if load_errors if 'load_errors' in dir() else False:
-        st.divider()
-        st.markdown("### Missing Files")
-        for e in load_errors:
-            st.error(e)
-
 
 # ════════════════════════════════════════════════════════════════
 # DYNAMIC CSS  (switches based on theme)
@@ -1014,8 +1324,8 @@ if is_dark:
     tag_bg           = "#1a2744"
     tag_border       = "#1f3a6e"
     input_bg         = "#161b22"
-    doc_card_bg      = "#1c2333"
-    doc_card_border  = "#30363d"
+    zone_bg          = "#1c2333"
+    zone_border      = "#30363d"
 else:
     bg               = "#f0f4f8"
     surface          = "#ffffff"
@@ -1029,8 +1339,8 @@ else:
     tag_bg           = "#ede9fe"
     tag_border       = "#a78bfa"
     input_bg         = "#ffffff"
-    doc_card_bg      = "#f8faff"
-    doc_card_border  = "#c7d7f0"
+    zone_bg          = "#f8faff"
+    zone_border      = "#c7d7f0"
 
 st.markdown(f"""
 <style>
@@ -1221,6 +1531,16 @@ input, textarea, [data-baseweb="input"] {{
     margin-bottom: 1rem;
 }}
 
+.body-zone-note {{
+    background: {zone_bg};
+    border: 1px solid {zone_border};
+    border-radius: 10px;
+    padding: 0.7rem 1rem;
+    font-size: 0.83rem;
+    color: var(--muted);
+    margin: 0.6rem 0 1.2rem;
+}}
+
 .medi-footer {{
     text-align: center;
     color: var(--muted);
@@ -1294,12 +1614,50 @@ if not symptom_index:
 
 all_symptoms = sorted(symptom_index.keys())
 
+# ── BODY MAP QUICK SELECT ──────────────────────────────────────
+st.markdown('<div class="section-title">🧍 Quick Select by Body Area</div>', unsafe_allow_html=True)
+
+zone_items = list(BODY_ZONES.items())
+
+zone_row1 = st.columns(4)
+for i, (zone_key, zone_data) in enumerate(zone_items[:4]):
+    with zone_row1[i]:
+        if st.button(zone_data["label"], key=f"zone_{zone_key}", use_container_width=True):
+            valid_symptoms = [s for s in zone_data["symptoms"] if s in symptom_index]
+            for s in valid_symptoms:
+                if s not in st.session_state.body_selected:
+                    st.session_state.body_selected.append(s)
+            st.rerun()
+
+zone_row2 = st.columns(4)
+for i, (zone_key, zone_data) in enumerate(zone_items[4:]):
+    with zone_row2[i]:
+        if st.button(zone_data["label"], key=f"zone_{zone_key}", use_container_width=True):
+            valid_symptoms = [s for s in zone_data["symptoms"] if s in symptom_index]
+            for s in valid_symptoms:
+                if s not in st.session_state.body_selected:
+                    st.session_state.body_selected.append(s)
+            st.rerun()
+
+if st.session_state.body_selected:
+    selected_preview = ", ".join(st.session_state.body_selected)
+    st.markdown(
+        f'<div class="body-zone-note">✅ Auto-selected from body map: {selected_preview}</div>',
+        unsafe_allow_html=True,
+    )
+    if st.button("🗑️ Clear body-map selections", key="clear_body"):
+        st.session_state.body_selected = []
+        st.rerun()
+
+# ── MAIN SYMPTOM MULTISELECT ───────────────────────────────────
 col_sel, col_btn = st.columns([4, 1], vertical_alignment="bottom")
 with col_sel:
     selected_symptoms = st.multiselect(
         "🔎 Select Symptoms",
         all_symptoms,
+        default=st.session_state.body_selected,
         placeholder="Type to search symptoms…",
+        key="symptom_multiselect",
     )
 with col_btn:
     predict_clicked = st.button("Predict", use_container_width=True)
@@ -1651,7 +2009,6 @@ if st.session_state.disease:
             q_encoded = f"{doctor_type}+near+{city}".replace(" ", "+")
             maps_url  = f"https://www.google.com/maps/search/{q_encoded}"
 
-            # Main Google Maps CTA
             st.markdown(f"""
             <div class="medi-card" style="text-align:center; padding:2rem;">
                 <div style="font-size:2.5rem; margin-bottom:0.75rem;">🗺️</div>
@@ -1669,7 +2026,6 @@ if st.session_state.disease:
             </div>
             """, unsafe_allow_html=True)
 
-            # Platform quick links
             st.markdown('<div class="section-title">Book on Indian Platforms</div>', unsafe_allow_html=True)
 
             city_short   = city.split(",")[0].strip()
@@ -1704,7 +2060,6 @@ if st.session_state.disease:
                    💜<br>Lybrate
                 </a>""", unsafe_allow_html=True)
 
-            # Emergency info for HIGH risk
             if risk_level == "HIGH":
                 st.markdown("""
                 <div style="background:#2d0a0a; border:1px solid #ef444460;
